@@ -36,6 +36,7 @@ public class PodcastDBHelper extends SQLiteOpenHelper {
             _ID, EPISODE_TITLE, EPISODE_DATE, EPISODE_LINK,
             EPISODE_DESC, EPISODE_DOWNLOAD_LINK, EPISODE_FILE_URI
     };
+
     final private static String CREATE_CMD =
             "CREATE TABLE "+DATABASE_TABLE+" (" + _ID
                     + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -45,8 +46,6 @@ public class PodcastDBHelper extends SQLiteOpenHelper {
                     + EPISODE_DESC + " TEXT NOT NULL, "
                     + EPISODE_DOWNLOAD_LINK + " TEXT NOT NULL, "
                     + EPISODE_FILE_URI + " TEXT NOT NULL)";
-
-
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {

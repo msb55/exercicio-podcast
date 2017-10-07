@@ -40,4 +40,13 @@ public class ItemFeed {
     public String toString() {
         return title;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return  this.getTitle().equals(((ItemFeed) obj).getTitle()) &&
+                this.getLink().equals(((ItemFeed) obj).getLink()) &&
+                this.getDescription().equals(((ItemFeed) obj).getDescription()) &&
+                this.getPubDate().equals(((ItemFeed) obj).getPubDate()) &&
+                this.getDownloadLink().equals(((ItemFeed) obj).getDownloadLink());
+    }
 }

@@ -1,7 +1,10 @@
 package br.ufpe.cin.if710.podcast.ui;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.ufpe.cin.if710.podcast.R;
+import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
 import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
@@ -87,6 +91,29 @@ public class MainActivity extends Activity {
             List<ItemFeed> itemList = new ArrayList<>();
             try {
                 itemList = XmlFeedParser.parse(getRssFeed(params[0]));
+                constraintInsertDB(itemList);
+
+                for (ItemFeed item: itemList) {
+                    ContentValues cv = new ContentValues();
+
+                    cv.put(PodcastProviderContract.EPISODE_TITLE, item.getTitle());
+                    cv.put(PodcastProviderContract.EPISODE_DATE, item.getPubDate());
+                    cv.put(PodcastProviderContract.EPISODE_DESC, item.getDescription());
+                    cv.put(PodcastProviderContract.EPISODE_DOWNLOAD_LINK, item.getDownloadLink());
+                    cv.put(PodcastProviderContract.EPISODE_LINK, item.getLink());
+                    cv.put(PodcastProviderContract.EPISODE_FILE_URI, "");
+
+                    Uri uri = getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
+
+                    if(uri == null) System.out.println("Erro no item: " + item.getTitle());
+                }
+
+//                System.out.println("INSERÇÃO NO BANCO FINALIZADA.");
+
+                /* Apenas para "limpar" os registros do banco (p/ testes)
+                    getContentResolver().delete(PodcastProviderContract.EPISODE_LIST_URI, null, null);
+                    System.out.println("DELETE ALL ITENS.");
+                */
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (XmlPullParserException e) {
@@ -98,13 +125,8 @@ public class MainActivity extends Activity {
         @Override
         protected void onPostExecute(List<ItemFeed> feed) {
             Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
+            new ConsultDBTask().execute();
 
-            //Adapter Personalizado
-            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
-
-            //atualizar o list view
-            items.setAdapter(adapter);
-            items.setTextFilterEnabled(true);
             /*
             items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -116,6 +138,86 @@ public class MainActivity extends Activity {
                 }
             });
             /**/
+        }
+
+        private void constraintInsertDB (List<ItemFeed> itens) {
+            Cursor cursor = getContentResolver().query(
+                    PodcastProviderContract.EPISODE_LIST_URI,
+                    null,
+                    null,
+                    null,
+                    null);
+            int count = cursor.getCount();
+
+            if(count > 0) {
+                while(cursor.moveToNext()) {
+                    ItemFeed aux = cursorToItemFeed(cursor);
+                    if(itens.contains(aux)) itens.remove(aux);
+                }
+            }
+        }
+    }
+
+    protected ItemFeed cursorToItemFeed (Cursor cursor) {
+        /* columns
+            EPISODE_TITLE
+            EPISODE_DATE
+            EPISODE_LINK
+            EPISODE_DESC
+            EPISODE_DOWNLOAD_LINK
+         */
+        int EPISODE_TITLE = cursor.getColumnIndex(PodcastProviderContract.EPISODE_TITLE),
+                EPISODE_DATE = cursor.getColumnIndex(PodcastProviderContract.EPISODE_DATE),
+                EPISODE_LINK = cursor.getColumnIndex(PodcastProviderContract.EPISODE_LINK),
+                EPISODE_DESC = cursor.getColumnIndex(PodcastProviderContract.EPISODE_DESC),
+                EPISODE_DOWNLOAD_LINK = cursor.getColumnIndex(PodcastProviderContract.EPISODE_DOWNLOAD_LINK);
+
+        return new ItemFeed(
+                cursor.getString(EPISODE_TITLE),
+                cursor.getString(EPISODE_LINK),
+                cursor.getString(EPISODE_DATE),
+                cursor.getString(EPISODE_DESC),
+                cursor.getString(EPISODE_DOWNLOAD_LINK)
+        );
+    }
+
+    private class ConsultDBTask extends AsyncTask<Void, Void, List<ItemFeed>> {
+
+        @Override
+        protected List<ItemFeed> doInBackground(Void... voids) {
+            Cursor cursor = getContentResolver().query(
+                    PodcastProviderContract.EPISODE_LIST_URI,
+                    null,
+                    null,
+                    null,
+                    null);
+            System.out.println(cursor.getCount());
+            if(cursor == null) {
+                return new ArrayList<ItemFeed>();
+            } else {
+                List<ItemFeed> retorno = new ArrayList<>();
+
+                while(cursor.moveToNext()) {
+                    ItemFeed item = cursorToItemFeed(cursor);
+                    retorno.add(item);
+                }
+
+                return retorno;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<ItemFeed> itemFeeds) {
+            if(itemFeeds == null) {
+                Toast.makeText(getApplicationContext(), "Não foi encontrado registro no banco.", Toast.LENGTH_SHORT).show();
+            } else {
+                //Adapter Personalizado
+                XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, itemFeeds);
+
+                //atualizar o list view
+                items.setAdapter(adapter);
+                items.setTextFilterEnabled(true);
+            }
         }
     }
 

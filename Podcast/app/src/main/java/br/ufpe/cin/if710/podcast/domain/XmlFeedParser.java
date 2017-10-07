@@ -70,8 +70,8 @@ public class XmlFeedParser {
             if (name.equals("title")) {
                 title = readData(parser, "title");
             }
-            else if (name.equals("link")) {
-                link = readData(parser, "link");
+            else if (name.equals("guid")) {
+                link = readData(parser, "guid");
             }
             else if (name.equals("pubDate")) {
                 pubDate = readData(parser, "pubDate");
@@ -115,7 +115,7 @@ public class XmlFeedParser {
     public static String readEnclosure(XmlPullParser parser)
             throws IOException, XmlPullParserException {
         //parser.require(XmlPullParser.START_TAG, null, "enclosure");
-        String data = "implementar...";
+        String data = parser.getAttributeValue(null, "url");
         //parser.require(XmlPullParser.END_TAG, null, "enclosure");
         return data;
     }

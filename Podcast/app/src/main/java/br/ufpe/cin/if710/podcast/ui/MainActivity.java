@@ -2,8 +2,11 @@ package br.ufpe.cin.if710.podcast.ui;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -70,7 +73,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        new DownloadXmlTask().execute(RSS_FEED);
+//        new DownloadXmlTask().execute(RSS_FEED);
+        connectivity();
     }
 
     @Override
@@ -230,5 +234,22 @@ public class MainActivity extends Activity {
             }
         }
         return rssFeed;
+    }
+
+    private void connectivity() {
+        ConnectivityManager cm = (ConnectivityManager)getApplicationContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+        if(isConnected) {
+            System.out.println("TEM CONEXÃO COM A INTERNET");
+            new DownloadXmlTask().execute(RSS_FEED);
+        } else {
+            System.out.println("SEM CONEXÃO COM A INTERNET");
+            new ConsultDBTask().execute();
+        }
     }
 }

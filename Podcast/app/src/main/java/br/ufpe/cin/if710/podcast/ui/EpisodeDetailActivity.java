@@ -23,12 +23,18 @@ public class EpisodeDetailActivity extends Activity {
         TextView link = (TextView) findViewById(R.id.link);
         Button download = (Button) findViewById(R.id.botao_download);
 
+        /*
+        * a partir do intent criado, eh passado os atributos do item selecionado
+        * e realocados nos componentes da tela
+        */
+
         Intent i = getIntent();
         titulo.setText(i.getExtras().getString("title"));
         descricao.setText(i.getExtras().getString("description"));
         data.setText(i.getExtras().getString("date"));
         link.setText(i.getExtras().getString("link"));
 
+        // caso futuro...
         download.setEnabled(false);
     }
 }

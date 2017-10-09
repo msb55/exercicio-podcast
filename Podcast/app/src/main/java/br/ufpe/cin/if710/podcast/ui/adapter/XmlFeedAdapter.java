@@ -1,16 +1,22 @@
 package br.ufpe.cin.if710.podcast.ui.adapter;
 
 import java.util.List;
+
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.service.DownloadPodcastService;
 import br.ufpe.cin.if710.podcast.ui.EpisodeDetailActivity;
 
 public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
@@ -52,24 +58,69 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
     static class ViewHolder {
         TextView item_title;
         TextView item_date;
+        Button btn; // adicionado o botao de cada item
+
+        MediaPlayer mPlayer; // player para o podcast
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        final ViewHolder holder;
+
         if (convertView == null) {
             convertView = View.inflate(getContext(), linkResource, null);
             holder = new ViewHolder();
             holder.item_title = (TextView) convertView.findViewById(R.id.item_title);
             holder.item_date = (TextView) convertView.findViewById(R.id.item_date);
+            holder.btn = (Button) convertView.findViewById(R.id.item_action);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
+
         holder.item_title.setText(getItem(position).getTitle());
         holder.item_date.setText(getItem(position).getPubDate());
 
-        final ItemFeed item = getItem(position);
+        final ItemFeed item = getItem(position); // item 'selecionado'
+
+        if(!item.getFile_uri().isEmpty()) {
+            /*
+            esta havendo inconsistencia nos botoes, alguns itens mesmo sem URI do arquivo,
+            tem seu botao como PLAY e não BAIXAR
+            */
+            holder.btn.setText("PLAY");
+            holder.mPlayer = MediaPlayer.create(getContext(), Uri.parse(item.getFile_uri()));
+            /*System.out.println(item.getTitle() + " - " + item.getDownloadLink());*/
+        }
+
+        holder.btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String btn_name = holder.btn.getText().toString().toLowerCase();
+                if(btn_name.equals("play") || btn_name.equals("pause")) { // caso ja tenha o podcast baixado
+                    /*do somethin to play podcast*/
+                    if(item.getFile_uri().isEmpty()) { // inconsistência com os botoes
+                        holder.btn.setText("BAIXAR");
+                    } else if(btn_name.equals("play") && holder.mPlayer != null) {
+                        holder.mPlayer.start();
+                        holder.btn.setText("PAUSE");
+                    } else if(btn_name.equals("pause") && holder.mPlayer != null) {
+                        holder.mPlayer.pause();
+                        holder.btn.setText("PLAY");
+                    }
+                    /*System.out.println("STUB PLAYING PODCAST " + item.getFile_uri().isEmpty());*/
+                } else if(btn_name.equals("baixar")) { // para baixar o podcast
+                    holder.btn.setText("BAIXANDO");
+
+                    // iniciar um IntentService que fara o download do podcast, passando como argumento o link
+                    Intent downloadPodcast = new Intent(getContext(), DownloadPodcastService.class);
+                    downloadPodcast.setData(Uri.parse(item.getDownloadLink()));
+                    getContext().startService(downloadPodcast);
+                } else {
+                    Toast.makeText(getContext(), "Download em andamento", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         holder.item_title.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -20,6 +20,11 @@ public class PodcastProviderContract {
     public static final String EPISODE_TABLE = "episodes";
      */
 
+    /*
+    * os atributos setados anteriormente apresentavam algumas inconsistencias
+    * esses abaixo foram trazidos da classe Helper
+    */
+
     public final static String _ID = "_id";
     public final static String EPISODE_TITLE = "title";
     public final static String EPISODE_DATE = "pubDate";

@@ -12,6 +12,10 @@ public class PodcastProvider extends ContentProvider {
     public PodcastProvider() {
     }
 
+    /*
+    As alteracoes aqui feitas segue o modelo dado em sala
+    Apenas passando as queries para o PodcastDBHelper
+     */
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         // Implement this to handle requests to delete one or more rows.

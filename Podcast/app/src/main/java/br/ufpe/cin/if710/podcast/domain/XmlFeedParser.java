@@ -88,7 +88,7 @@ public class XmlFeedParser {
                 skip(parser);
             }
         }
-        ItemFeed result = new ItemFeed(title, link, pubDate, description, downloadLink);
+        ItemFeed result = new ItemFeed(title, link, pubDate, description, downloadLink, "");
         return result;
     }
 
@@ -115,6 +115,7 @@ public class XmlFeedParser {
     public static String readEnclosure(XmlPullParser parser)
             throws IOException, XmlPullParserException {
         //parser.require(XmlPullParser.START_TAG, null, "enclosure");
+        // apenas buscar pelo atributo da tag 'enclosure' --> "url"
         String data = parser.getAttributeValue(null, "url");
         //parser.require(XmlPullParser.END_TAG, null, "enclosure");
         return data;

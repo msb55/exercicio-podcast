@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import br.ufpe.cin.if710.podcast.R;
+import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.service.DownloadPodcastService;
 import br.ufpe.cin.if710.podcast.ui.EpisodeDetailActivity;
@@ -115,6 +116,7 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
                     // iniciar um IntentService que fara o download do podcast, passando como argumento o link
                     Intent downloadPodcast = new Intent(getContext(), DownloadPodcastService.class);
                     downloadPodcast.setData(Uri.parse(item.getDownloadLink()));
+                    downloadPodcast.putExtra(PodcastProviderContract.EPISODE_TITLE, item.getTitle());
                     getContext().startService(downloadPodcast);
                 } else {
                     Toast.makeText(getContext(), "Download em andamento", Toast.LENGTH_SHORT).show();

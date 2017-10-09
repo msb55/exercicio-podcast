@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import br.ufpe.cin.if710.podcast.application.MyApplication;
 import br.ufpe.cin.if710.podcast.db.PodcastProvider;
 import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
@@ -87,10 +88,22 @@ public class DownloadPodcastService extends IntentService {
                         selectionArgs
                     );
 
-            Log.i("downloadservice", "EPISODE_FILE_URI saved, number of rows: " + x);
+            /*Thread.sleep(3000);*/
+            Log.i("downloadservice", "EPISODE_FILE_URI saved, number of rows: " + 10);
 
-            // notifica que o download foi finalizado para a atualização da lista
-            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(DOWNLOAD_COMPLETE));
+            MyApplication app = (MyApplication) getApplicationContext();
+
+            Intent i = new Intent(DOWNLOAD_COMPLETE);
+            i.putExtra(PodcastProviderContract.EPISODE_TITLE, intent.getExtras().getString(PodcastProviderContract.EPISODE_TITLE));
+
+            // verifica se a activity esta em primeiro plano (visivel)
+            if(app.isActivityVisible()) {
+                // notifica para o aplicativo diretamente
+                LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+            } else {
+                // envia para o receiver que esta encarregado de tratar esse tipo de broadcast (DOWNLOAD_COMPLETE)
+                sendBroadcast(i);
+            }
         } catch (Exception e2) {
             Log.e(getClass().getName(), "Exception durante download", e2);
         }

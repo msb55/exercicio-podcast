@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.ufpe.cin.if710.podcast.R;
+import br.ufpe.cin.if710.podcast.application.MyApplication;
 import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
@@ -102,6 +103,7 @@ public class MainActivity extends Activity {
         // registrando intentfilter para notificacoes de download concluido
         IntentFilter f = new IntentFilter("br.ufpe.cin.if710.podcast.service.action.DOWNLOAD_COMPLETE");
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, f);
+        MyApplication.activityResumed();
     }
 
     @Override
@@ -116,6 +118,7 @@ public class MainActivity extends Activity {
         super.onPause();
         // removendo registro
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
+        MyApplication.activityPaused();
     }
 
     @Override
